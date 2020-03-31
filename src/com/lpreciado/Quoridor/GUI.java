@@ -8,19 +8,21 @@ import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.net.*;
 import java.util.*;
 import javax.swing.*;
 
-public class GUI {
-	int frameHeight = 700;
-	int frameWidth = 700;
+public class GUI implements MouseListener {
+	int frameHeight = 645;
+	int frameWidth = 580;
 	int gameBoardSize = 400;
 	int marginSize = 16;
 	int highScore;
 	int gameRows = 18;
 	int gameColumns = 18;
-	
+
 	Color backgroundColor = new Color(152, 0, 0);
 	Hashtable<Character, ImageIcon> Tiles;
 	Game game;
@@ -30,16 +32,20 @@ public class GUI {
 	Font smallFeedbackFont = new Font("SansSerif", 0, 20);
 	JLabel playerTurn;
 	JLabel numberWalls;
-	
-	
+	JLabel PlayerOneWallsLabel;
+	JLabel PlayerTwoWallsLabel;
+
+	int playerOneWalls;
+	int playerTwoWalls;
+
 	public GUI() {
 		game = new Game(10);
-		this.frame = new MyFrame(); 
+		this.frame = new MyFrame();
 		frame.setFocusable(true);
-		//frame.setResizable(false);
+		frame.setResizable(false);
 		frame.addKeyListener(new MyFrame());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		loadTiles(); //initialize the tiles in a hashSet
+		loadTiles(); // initialize the tiles in a hashSet
 
 		gb = new GameBoard();
 		gb.setFocusable(true);
@@ -50,12 +56,16 @@ public class GUI {
 
 		JLabel gameLabel = new JLabel("Quoridor", SwingConstants.CENTER);
 		northPanel.add(gameLabel);
-		JLabel PlayerOneWallsLabel = new JLabel("Player 2 Walls: " + 10 , SwingConstants.LEFT);
-		JLabel PlayerTwoWallsLabel = new JLabel("Player 1 Walls: " + 10 , SwingConstants.RIGHT);
+		playerOneWalls = game.p1.getWalls();
+		playerTwoWalls = game.p2.getWalls();
+		PlayerOneWallsLabel = new JLabel("Player 2 Walls: " + playerOneWalls, SwingConstants.LEFT);
+		PlayerTwoWallsLabel = new JLabel("Player 1 Walls: " + playerTwoWalls, SwingConstants.RIGHT);
+		playerTurn = new JLabel("Player 1", SwingConstants.LEFT);
 		gameLabel.setFont(new Font("Serif", Font.BOLD, 20));
+		northPanel.add(playerTurn);
 		northPanel.add(PlayerOneWallsLabel);
 		northPanel.add(PlayerTwoWallsLabel);
-		
+
 		northPanel.setBackground(backgroundColor);
 
 		// West Panel
@@ -82,7 +92,7 @@ public class GUI {
 		frame.pack();
 		frame.setVisible(true);
 	}
-	
+
 	private void loadTiles() {
 		Tiles = new Hashtable<Character, ImageIcon>();
 		ClassLoader cldr = this.getClass().getClassLoader();
@@ -106,44 +116,44 @@ public class GUI {
 		Tiles.put('h', new ImageIcon(urlWallHorizontal));
 		Tiles.put('v', new ImageIcon(urlWallVertical));
 
-	} 
-	
+	}
+
 	class GameBoard extends JPanel {
 		@Override
 		protected void paintComponent(Graphics g) {
 			g.setColor(new Color(20, 20, 20));
 			g.fillRect(0, 0, this.getWidth(), this.getHeight());
 			char[][] board = game.getGameBoard();
+			playerOneWalls = game.p1.getWalls();
+			playerTwoWalls = game.p2.getWalls();
 			int previousX = 8;
 			int previousY = 8;
-			int fatIncrease = 50;//TILE HEIGHT
-			int slimIncrease = 10; //TILE WIDTH
+			int fatIncrease = 50;// TILE HEIGHT
+			int slimIncrease = 10; // TILE WIDTH
 			for (int y = 0; y < board.length; y++) {
-				
 				for (int x = 0; x < board[y].length; x++) {
 					char thisCharacter = board[y][x];
 					int X;
 					int Y = previousY;
-					if(x == 0) { //New Row
-						 X = 8;
-						 previousX = X + fatIncrease;
+					if (x == 0) { // New Row
+						X = 8;
+						previousX = X + fatIncrease;
 					} else if (x % 2 != 0) {
 						X = previousX;
-						previousX = X  + slimIncrease ;
+						previousX = X + slimIncrease;
 					} else {
 						X = previousX;
-						previousX = X  + fatIncrease;
+						previousX = X + fatIncrease;
 					}
-					
-					
-					if(y %2 == 0 && x == board[y].length - 1 || y == 0 && x == board[y].length -1) {
+
+					if (y % 2 == 0 && x == board[y].length - 1 || y == 0 && x == board[y].length - 1) {
 						previousY = Y + fatIncrease;
 					}
-					if(y %2 != 0 && x == board[y].length -1) {
+					if (y % 2 != 0 && x == board[y].length - 1) {
 						previousY = Y + slimIncrease;
 					}
-					
-					if (Tiles.containsKey(thisCharacter)) { 
+
+					if (Tiles.containsKey(thisCharacter)) {
 						ImageIcon thisTile = Tiles.get(thisCharacter);
 						thisTile.paintIcon(this, g, X, Y);
 					}
@@ -153,38 +163,64 @@ public class GUI {
 		}
 
 	}
-	
+
 	class MyFrame extends JFrame implements KeyListener {
 		int cols = gameRows;
 		int rows = gameColumns;
-		
+
 		@Override
 		public void keyPressed(KeyEvent e) {
 
 		}
-		private void manageGame(Game game, GameBoard gb) {
-			System.out.print("Manage State");
+
+		private void manageGame(Game game) {
+			System.out.println("Manage State Called");
+			game.updateBoard();
+			game.printBoard();
+			updatePlayerTurn();
+			gb.repaint();
 		}
+
 		@Override
 		public void keyReleased(KeyEvent e) {
+			GameState gameState = game.getGameState();
+			boolean playerHasAlreadyWon = gameState == GameState.P1_WIN || gameState == GameState.P2_WIN;
+			if (playerHasAlreadyWon)
+				System.out.println("Player has already Won");
 			int key = e.getKeyCode();
-			if (game.getGameState() == GameState.P1_TURN) {
-				switch (key) {
-				case (KeyEvent.VK_UP):
-					System.out.println("UP");
-					break;
-				case KeyEvent.VK_DOWN:
-					System.out.println("DOWN");
-					break;
-				case KeyEvent.VK_LEFT:
-					System.out.println("LEFT");
-					break;
-				case KeyEvent.VK_RIGHT:
-					System.out.println("RIGHT");
-					break;
+
+			switch (key) {
+			case (KeyEvent.VK_UP):
+				if (gameState == GameState.P1_TURN) {
+					game.p1.moveUp();
+				} else {
+					game.p2.moveUp();	
 				}
-				
-			} 
+				break;
+			case KeyEvent.VK_DOWN:
+				if (gameState == GameState.P1_TURN) {
+					game.p1.moveDown();
+				} else {
+					game.p2.moveDown();
+				}
+				break;
+			case KeyEvent.VK_LEFT:
+				if (gameState == GameState.P1_TURN) {
+					game.p1.moveLeft();
+				} else {
+					game.p2.moveLeft();
+				}
+				break;
+			case KeyEvent.VK_RIGHT:
+				if (gameState == GameState.P1_TURN) {
+					game.p1.moveRight();
+				} else {
+					game.p2.moveRight();
+				}
+				break;
+			}
+			
+			manageGame(game);
 
 		}
 
@@ -192,5 +228,59 @@ public class GUI {
 		public void keyTyped(KeyEvent e) {
 
 		}
+	}
+
+	public void updatePlayerTurn() {
+		GameState gameState = game.getGameState();
+		String message = "";
+		switch (gameState) {
+		case P1_TURN:
+			message = "Player 1";
+			break;
+		case P2_TURN:
+			message = "Player 2";
+			break;
+		case P1_WIN:
+			message = "Player 1 Win";
+			break;
+		case P2_WIN:
+			message = "Player 2 Win";
+			break;
+		case CONTINUE:
+			message = "CONTINUE";
+			break;
+		}
+		playerTurn.setText(message);
+
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		System.out.println("Mouse Clicked!");
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		System.out.println("Mouse Clicked!");
+
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		System.out.println("Mouse Clicked!");
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+
 	}
 }

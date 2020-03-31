@@ -11,6 +11,7 @@ public class Player {
 	private boolean isPlayerTurn;
 	private int walls;
 	private int playerNumber;
+	public boolean placedAWallInPreviousMove;
 	Stack<Wall> availableWalls;
 	
 	
@@ -41,8 +42,9 @@ public class Player {
 		this.isPlayerTurn = isTurn;
 	}
 	
-	private void finishMove() {
+	private void finishMove(boolean placedWall) {
 		this.isPlayerTurn = !this.isPlayerTurn;
+		this.placedAWallInPreviousMove = placedWall;
 	}
 	
 	public int getPreviousRowPosition() {
@@ -70,13 +72,21 @@ public class Player {
 		if(getRowPosition() >= 2 && isTurn()) {
 			return true;
 		}
+		ifNotPlayerTurnRemindHim();
 		return false;
+	}
+	
+	private void ifNotPlayerTurnRemindHim() {
+		if(!isTurn()) {
+			System.out.println("NOT YOUR TURN!");
+		}
 	}
 	
 	private boolean canMoveDown() {
 		if(getRowPosition() <= (this.boardHeight - 3) && getRowPosition() >= 0 && isTurn()) {
 			return true;
 		}
+		ifNotPlayerTurnRemindHim();
 		return false;
 	}
 	
@@ -84,6 +94,7 @@ public class Player {
 		if(getColPosition() < (this.boardWidth - 3) && isTurn()) {
 			return true;
 		}
+		ifNotPlayerTurnRemindHim();
 		return false;
 	}
 	
@@ -91,6 +102,7 @@ public class Player {
 		if(getColPosition() >= 2 && isTurn()) {
 			return true;
 		}
+		ifNotPlayerTurnRemindHim();
 		return false;
 	}
 	
@@ -99,7 +111,7 @@ public class Player {
 			this.previousRowPosition = this.rowPosition;
 			this.rowPosition = getRowPosition() - 2;
 			System.out.println("Player " + this.playerNumber + " MoveUp Called True");
-			finishMove();
+			finishMove(false);
 		} else {
 			System.out.println("Player " + this.playerNumber + " MoveUp Called False");
 		}
@@ -109,10 +121,11 @@ public class Player {
 	
 	public void moveDown() {
 		if(canMoveDown()) {
+			System.out.println("Previous Row:" + this.rowPosition + "Previous Column: " + this.colPosition);
 			this.previousRowPosition = this.rowPosition;
 			this.rowPosition = getRowPosition() + 2;
 			System.out.println("Player " + this.playerNumber + " MoveDown Called True");
-			finishMove();
+			finishMove(false);
 		} else {
 			System.out.println("Player " + this.playerNumber + " MoveDown Called False");
 		}
@@ -123,15 +136,16 @@ public class Player {
 		if(canMoveRight()) {
 			this.previousColPosition = this.colPosition;
 			this.colPosition = getColPosition() + 2;
-			finishMove();
+			finishMove(false);
 		}
 		
 	}
 	
 	public void moveLeft() {
 		if(canMoveLeft()) {
+			this.previousColPosition = this.colPosition;
 			this.colPosition = getColPosition() - 2;
-			finishMove();
+			finishMove(false);
 		}
 	}
 	
@@ -150,7 +164,7 @@ public class Player {
 				--walls;
 				w.place(coords);
 				activeWalls.add(w);
-				finishMove();
+				finishMove(true);
 				return true;
 			}else {
 				return false;
