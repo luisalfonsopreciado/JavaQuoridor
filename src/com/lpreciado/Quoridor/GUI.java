@@ -1,16 +1,7 @@
 package com.lpreciado.Quoridor;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Point;
-import java.awt.Graphics;
-import java.awt.GridLayout;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.net.*;
 import java.util.*;
 import javax.swing.*;
@@ -20,7 +11,6 @@ public class GUI {
 	int frameWidth = 580;
 	int gameBoardSize = 400;
 	int marginSize = 16;
-	int highScore;
 	int gameRows = 18;
 	int gameColumns = 18;
 
@@ -35,9 +25,8 @@ public class GUI {
 	JLabel numberWalls;
 	JLabel PlayerOneWallsLabel;
 	JLabel PlayerTwoWallsLabel;
+	JButton rulesButton = new JButton();
 
-	int playerOneWalls;
-	int playerTwoWalls;
 
 	public GUI() {
 		startGame();
@@ -78,8 +67,6 @@ public class GUI {
 			gb.addMouseListener(this);
 			addMouseListener(this);
 			char[][] board = game.getGameBoard();
-			playerOneWalls = game.p1.getWalls();
-			playerTwoWalls = game.p2.getWalls();
 			int previousX = 8;
 			int previousY = 8;
 			int fatIncrease = 50;// TILE HEIGHT
@@ -206,6 +193,7 @@ public class GUI {
 		PlayerOneWallsLabel.setText("Player 1 Walls: " + game.p1.getWalls());
 		PlayerTwoWallsLabel.setText("Player 2 Walls: " + game.p2.getWalls());
 	}
+	
 	private void updatePlayerTurn() {
 		GameState gameState = game.getGameState();
 		String message = "";
@@ -228,6 +216,7 @@ public class GUI {
 		}
 		playerTurn.setText(message);
 	}
+	
 	private void startGame(){
 		game = new Game(10);
 		this.frame = new MyFrame();
@@ -246,10 +235,8 @@ public class GUI {
 
 		JLabel gameLabel = new JLabel("Quoridor", SwingConstants.CENTER);
 		northPanel.add(gameLabel);
-		playerOneWalls = game.p1.getWalls();
-		playerTwoWalls = game.p2.getWalls();
-		PlayerOneWallsLabel = new JLabel("Player 2 Walls: " + playerOneWalls, SwingConstants.LEFT);
-		PlayerTwoWallsLabel = new JLabel("Player 1 Walls: " + playerTwoWalls, SwingConstants.RIGHT);
+		PlayerOneWallsLabel = new JLabel("Player 2 Walls: " + game.p1.getWalls(), SwingConstants.LEFT);
+		PlayerTwoWallsLabel = new JLabel("Player 1 Walls: " + game.p2.getWalls(), SwingConstants.RIGHT);
 		playerTurn = new JLabel("Player 1", SwingConstants.LEFT);
 		gameLabel.setFont(new Font("Serif", Font.BOLD, 20));
 		northPanel.add(playerTurn);
@@ -277,9 +264,12 @@ public class GUI {
 		frame.getContentPane().add(eastBuffer, BorderLayout.EAST);
 		frame.getContentPane().add(southBuffer, BorderLayout.SOUTH);
 		frame.getContentPane().add(gb, BorderLayout.CENTER);
-
 		frame.getContentPane().setPreferredSize(new Dimension(frameWidth, frameHeight));
 		frame.pack();
 		frame.setVisible(true);
+	}
+
+	public void displayRules(){
+		
 	}
 }

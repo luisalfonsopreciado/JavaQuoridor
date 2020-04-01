@@ -16,8 +16,8 @@ public class Game {
 	Player p2;
 	private int moves = 0;
 
-	 ArrayList<Wall> p1ActiveWalls;
-	 ArrayList<Wall> p2ActiveWalls;
+	ArrayList<Wall> p1ActiveWalls;
+	ArrayList<Wall> p2ActiveWalls;
 
 	public GameState getGameState() {
 		return this.state;
