@@ -158,7 +158,7 @@ public class Player {
 		}
 	}
 	
-	public boolean placeWall(int[][] coords, ArrayList<Wall> activeWalls) {
+	public boolean placeWall(int[] coords, ArrayList<Wall> activeWalls) {
 			if(this.walls > 0) {
 				Wall w = availableWalls.pop();
 				--walls;

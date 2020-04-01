@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.KeyEvent;
@@ -14,7 +15,7 @@ import java.net.*;
 import java.util.*;
 import javax.swing.*;
 
-public class GUI implements MouseListener {
+public class GUI {
 	int frameHeight = 645;
 	int frameWidth = 580;
 	int gameBoardSize = 400;
@@ -118,11 +119,15 @@ public class GUI implements MouseListener {
 
 	}
 
-	class GameBoard extends JPanel {
+	class GameBoard extends JPanel implements MouseListener {
 		@Override
 		protected void paintComponent(Graphics g) {
 			g.setColor(new Color(20, 20, 20));
+			System.out.println("GB WIDTH: " + this.getWidth());
+			System.out.println("GB HEIGHT: " + this.getHeight());
 			g.fillRect(0, 0, this.getWidth(), this.getHeight());
+			gb.addMouseListener(this);
+			addMouseListener(this);
 			char[][] board = game.getGameBoard();
 			playerOneWalls = game.p1.getWalls();
 			playerTwoWalls = game.p2.getWalls();
@@ -162,6 +167,71 @@ public class GUI implements MouseListener {
 			}
 		}
 
+		@Override
+		public void mouseClicked(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			Point p = e.getPoint();
+			isValidWall(p.getX(), p.getY());
+
+
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+
+		}
+
+		private boolean isValidWall(double x, double y){
+			if(x <= 9 || x >= 539 || y <=9 || y>=539) return false;
+			int small = 10;
+			double previousX = 59;
+			for(int i = 0; i < 8; i++){ //loop thru the board
+				double min = previousX;
+				double max = min + small;
+				boolean ValidXCoord = x > min && x < max;
+				boolean ValidYCoord = y > min && y < max;
+				if(ValidXCoord || ValidYCoord){
+					i = convertToBoardCoord(i);
+					if(ValidXCoord){ //Valid X Coord
+						// i is equal to the col number
+						// check in the game if 
+						
+						// System.out.println("Row" + y + "Column" + i);
+						game.hasAvailableWallGivenColumn(y, i);
+					}else{ //Valid Y Coord
+						// i is equal to the row number
+						// System.out.println("Row" + i + "Column" + y);
+						game.hasAvailableWallGivenRow(x, i);
+					}
+					return true;
+				}
+				previousX = max + 50;
+			}
+			
+			return false;
+		}
+
+		private int convertToBoardCoord(int i ){
+			if(i==0){
+				i += 1;
+			} else if(i!=0) i = 2*i + 1;
+			return i;
+		}
+		
 	}
 
 	class MyFrame extends JFrame implements KeyListener {
@@ -176,7 +246,6 @@ public class GUI implements MouseListener {
 		private void manageGame(Game game) {
 			System.out.println("Manage State Called");
 			game.updateBoard();
-			game.printBoard();
 			updatePlayerTurn();
 			gb.repaint();
 		}
@@ -190,36 +259,36 @@ public class GUI implements MouseListener {
 			int key = e.getKeyCode();
 
 			switch (key) {
-			case (KeyEvent.VK_UP):
-				if (gameState == GameState.P1_TURN) {
-					game.p1.moveUp();
-				} else {
-					game.p2.moveUp();	
-				}
-				break;
-			case KeyEvent.VK_DOWN:
-				if (gameState == GameState.P1_TURN) {
-					game.p1.moveDown();
-				} else {
-					game.p2.moveDown();
-				}
-				break;
-			case KeyEvent.VK_LEFT:
-				if (gameState == GameState.P1_TURN) {
-					game.p1.moveLeft();
-				} else {
-					game.p2.moveLeft();
-				}
-				break;
-			case KeyEvent.VK_RIGHT:
-				if (gameState == GameState.P1_TURN) {
-					game.p1.moveRight();
-				} else {
-					game.p2.moveRight();
-				}
-				break;
+				case (KeyEvent.VK_UP):
+					if (gameState == GameState.P1_TURN) {
+						game.p1.moveUp();
+					} else {
+						game.p2.moveUp();
+					}
+					break;
+				case KeyEvent.VK_DOWN:
+					if (gameState == GameState.P1_TURN) {
+						game.p1.moveDown();
+					} else {
+						game.p2.moveDown();
+					}
+					break;
+				case KeyEvent.VK_LEFT:
+					if (gameState == GameState.P1_TURN) {
+						game.p1.moveLeft();
+					} else {
+						game.p2.moveLeft();
+					}
+					break;
+				case KeyEvent.VK_RIGHT:
+					if (gameState == GameState.P1_TURN) {
+						game.p1.moveRight();
+					} else {
+						game.p2.moveRight();
+					}
+					break;
 			}
-			
+
 			manageGame(game);
 
 		}
@@ -234,53 +303,24 @@ public class GUI implements MouseListener {
 		GameState gameState = game.getGameState();
 		String message = "";
 		switch (gameState) {
-		case P1_TURN:
-			message = "Player 1";
-			break;
-		case P2_TURN:
-			message = "Player 2";
-			break;
-		case P1_WIN:
-			message = "Player 1 Win";
-			break;
-		case P2_WIN:
-			message = "Player 2 Win";
-			break;
-		case CONTINUE:
-			message = "CONTINUE";
-			break;
+			case P1_TURN:
+				message = "Player 1";
+				break;
+			case P2_TURN:
+				message = "Player 2";
+				break;
+			case P1_WIN:
+				message = "Player 1 Win";
+				break;
+			case P2_WIN:
+				message = "Player 2 Win";
+				break;
+			case CONTINUE:
+				message = "CONTINUE";
+				break;
 		}
 		playerTurn.setText(message);
 
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		System.out.println("Mouse Clicked!");
-
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		System.out.println("Mouse Clicked!");
-
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		System.out.println("Mouse Clicked!");
-
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
 }
