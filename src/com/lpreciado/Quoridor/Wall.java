@@ -29,6 +29,7 @@ public class Wall {
 			result[2][1] = row;
 			result[2][0] = col + 2;
 		}
+		isOnTheBoard = true;
 		this.coords = result;
 	}
 	

@@ -40,6 +40,195 @@ public class GUI {
 	int playerTwoWalls;
 
 	public GUI() {
+		startGame();
+	}
+
+	private void loadTiles() {
+		Tiles = new Hashtable<Character, ImageIcon>();
+		ClassLoader cldr = this.getClass().getClassLoader();
+		URL urlPlayer1 = cldr.getResource("images/tile_player1.png");
+		URL urlPlayer2 = cldr.getResource("images/tile_player2.png");
+		URL urlEmptyTile = cldr.getResource("images/tile_empty.png");
+		URL urlWall = cldr.getResource("images/tile_wall.png");
+		URL urlEmptyWallPoint = cldr.getResource("images/point.png");
+		URL urlEmptyWallHorizontal = cldr.getResource("images/tile_wall_empty_horizontal.png");
+		URL urlWallHorizontal = cldr.getResource("images/tile_wall_horizontal.png");
+		URL urlEmptyWallVertical = cldr.getResource("images/tile_empty_wall.png");
+		URL urlWallVertical = cldr.getResource("images/tile_wall_vertical.png");
+
+		Tiles.put('1', new ImageIcon(urlPlayer1));
+		Tiles.put('2', new ImageIcon(urlPlayer2));
+		Tiles.put('o', new ImageIcon(urlEmptyTile));
+		Tiles.put('W', new ImageIcon(urlWall));
+		Tiles.put('.', new ImageIcon(urlEmptyWallPoint));
+		Tiles.put('-', new ImageIcon(urlEmptyWallHorizontal));
+		Tiles.put('|', new ImageIcon(urlEmptyWallVertical));
+		Tiles.put('h', new ImageIcon(urlWallHorizontal));
+		Tiles.put('v', new ImageIcon(urlWallVertical));
+
+	}
+
+	class GameBoard extends JPanel implements MouseListener {
+		private int counter = 0;
+		@Override
+		protected void paintComponent(Graphics g) {
+			counter = 0;
+			g.setColor(new Color(20, 20, 20));
+			g.fillRect(0, 0, this.getWidth(), this.getHeight());
+			gb.addMouseListener(this);
+			addMouseListener(this);
+			char[][] board = game.getGameBoard();
+			playerOneWalls = game.p1.getWalls();
+			playerTwoWalls = game.p2.getWalls();
+			int previousX = 8;
+			int previousY = 8;
+			int fatIncrease = 50;// TILE HEIGHT
+			int slimIncrease = 10; // TILE WIDTH
+			for (int y = 0; y < board.length; y++) {
+				for (int x = 0; x < board[y].length; x++) {
+					char thisCharacter = board[y][x];
+					int X;
+					int Y = previousY;
+					if (x == 0) { // New Row
+						X = 8;
+						previousX = X + fatIncrease;
+					} else if (x % 2 != 0) {
+						X = previousX;
+						previousX = X + slimIncrease;
+					} else {
+						X = previousX;
+						previousX = X + fatIncrease;
+					}
+
+					if (y % 2 == 0 && x == board[y].length - 1 || y == 0 && x == board[y].length - 1) {
+						previousY = Y + fatIncrease;
+					}
+					if (y % 2 != 0 && x == board[y].length - 1) {
+						previousY = Y + slimIncrease;
+					}
+
+					if (Tiles.containsKey(thisCharacter)) {
+						ImageIcon thisTile = Tiles.get(thisCharacter);
+						thisTile.paintIcon(this, g, X, Y);
+					}
+
+				}
+			}
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			Point p = e.getPoint();
+			if(counter == 0){
+				if(game.manageScreenClick(p.getX(), p.getY())) {
+					manageGame(game);
+					++counter;
+				}
+			}else{
+				System.out.println("COUNTER NOT ZERO");
+			}
+
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {}
+		@Override
+		public void mouseReleased(MouseEvent e) {}
+		@Override
+		public void mouseEntered(MouseEvent e) {}
+		@Override
+		public void mouseExited(MouseEvent e) {}
+		
+	}
+
+	class MyFrame extends JFrame implements KeyListener {
+		int cols = gameRows;
+		int rows = gameColumns;
+
+		@Override
+		public void keyPressed(KeyEvent e) {}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			GameState gameState = game.getGameState();
+			boolean playerHasAlreadyWon = gameState == GameState.P1_WIN || gameState == GameState.P2_WIN;
+			if (playerHasAlreadyWon) System.out.println("Player has already Won");
+			int key = e.getKeyCode();
+			char[][] gameBoard = game.getGameBoard();
+			switch (key) {	
+				case (KeyEvent.VK_UP):
+					if (gameState == GameState.P1_TURN) {
+						game.p1.moveUp(gameBoard);
+					} else {
+						game.p2.moveUp(gameBoard);
+					}
+					break;
+				case KeyEvent.VK_DOWN:
+					if (gameState == GameState.P1_TURN) {
+						game.p1.moveDown(gameBoard);
+					} else {
+						game.p2.moveDown(gameBoard);
+					}
+					break;
+				case KeyEvent.VK_LEFT:
+					if (gameState == GameState.P1_TURN) {
+						game.p1.moveLeft(gameBoard);
+					} else {
+						game.p2.moveLeft(gameBoard);
+					}
+					break;
+				case KeyEvent.VK_RIGHT:
+					if (gameState == GameState.P1_TURN) {
+						game.p1.moveRight(gameBoard);
+					} else {
+						game.p2.moveRight(gameBoard);
+					}
+					break;
+			}
+
+			manageGame(game);
+
+		}
+
+		@Override
+		public void keyTyped(KeyEvent e) {}
+	}
+
+	private void manageGame(Game game) {
+		System.out.println("Manage Game Called");
+		game.updateBoard();
+		updatePlayerTurn();
+		updateJLabels();
+		gb.repaint();
+		game.printBoard();
+	}
+	private void updateJLabels(){
+		PlayerOneWallsLabel.setText("Player 1 Walls: " + game.p1.getWalls());
+		PlayerTwoWallsLabel.setText("Player 2 Walls: " + game.p2.getWalls());
+	}
+	private void updatePlayerTurn() {
+		GameState gameState = game.getGameState();
+		String message = "";
+		switch (gameState) {
+			case P1_TURN:
+				message = "Player 1";
+				break;
+			case P2_TURN:
+				message = "Player 2";
+				break;
+			case P1_WIN:
+				message = "Player 1 Win";
+				break;
+			case P2_WIN:
+				message = "Player 2 Win";
+				break;
+			case CONTINUE:
+				message = "CONTINUE";
+				break;
+		}
+		playerTurn.setText(message);
+	}
+	private void startGame(){
 		game = new Game(10);
 		this.frame = new MyFrame();
 		frame.setFocusable(true);
@@ -93,251 +282,4 @@ public class GUI {
 		frame.pack();
 		frame.setVisible(true);
 	}
-
-	private void loadTiles() {
-		Tiles = new Hashtable<Character, ImageIcon>();
-		ClassLoader cldr = this.getClass().getClassLoader();
-		URL urlPlayer1 = cldr.getResource("images/tile_player1.png");
-		URL urlPlayer2 = cldr.getResource("images/tile_player2.png");
-		URL urlEmptyTile = cldr.getResource("images/tile_empty.png");
-		URL urlWall = cldr.getResource("images/tile_wall.png");
-		URL urlEmptyWallPoint = cldr.getResource("images/point.png");
-		URL urlEmptyWallHorizontal = cldr.getResource("images/tile_wall_empty_horizontal.png");
-		URL urlWallHorizontal = cldr.getResource("images/tile_wall_horizontal.png");
-		URL urlEmptyWallVertical = cldr.getResource("images/tile_empty_wall.png");
-		URL urlWallVertical = cldr.getResource("images/tile_wall_vertical.png");
-
-		Tiles.put('1', new ImageIcon(urlPlayer1));
-		Tiles.put('2', new ImageIcon(urlPlayer2));
-		Tiles.put('o', new ImageIcon(urlEmptyTile));
-		Tiles.put('W', new ImageIcon(urlWall));
-		Tiles.put('.', new ImageIcon(urlEmptyWallPoint));
-		Tiles.put('-', new ImageIcon(urlEmptyWallHorizontal));
-		Tiles.put('|', new ImageIcon(urlEmptyWallVertical));
-		Tiles.put('h', new ImageIcon(urlWallHorizontal));
-		Tiles.put('v', new ImageIcon(urlWallVertical));
-
-	}
-
-	class GameBoard extends JPanel implements MouseListener {
-		private int counter = 0;
-		@Override
-		protected void paintComponent(Graphics g) {
-			counter = 0;
-			g.setColor(new Color(20, 20, 20));
-			System.out.println("GB WIDTH: " + this.getWidth());
-			System.out.println("GB HEIGHT: " + this.getHeight());
-			g.fillRect(0, 0, this.getWidth(), this.getHeight());
-			gb.addMouseListener(this);
-			addMouseListener(this);
-			char[][] board = game.getGameBoard();
-			playerOneWalls = game.p1.getWalls();
-			playerTwoWalls = game.p2.getWalls();
-			int previousX = 8;
-			int previousY = 8;
-			int fatIncrease = 50;// TILE HEIGHT
-			int slimIncrease = 10; // TILE WIDTH
-			for (int y = 0; y < board.length; y++) {
-				for (int x = 0; x < board[y].length; x++) {
-					char thisCharacter = board[y][x];
-					int X;
-					int Y = previousY;
-					if (x == 0) { // New Row
-						X = 8;
-						previousX = X + fatIncrease;
-					} else if (x % 2 != 0) {
-						X = previousX;
-						previousX = X + slimIncrease;
-					} else {
-						X = previousX;
-						previousX = X + fatIncrease;
-					}
-
-					if (y % 2 == 0 && x == board[y].length - 1 || y == 0 && x == board[y].length - 1) {
-						previousY = Y + fatIncrease;
-					}
-					if (y % 2 != 0 && x == board[y].length - 1) {
-						previousY = Y + slimIncrease;
-					}
-
-					if (Tiles.containsKey(thisCharacter)) {
-						ImageIcon thisTile = Tiles.get(thisCharacter);
-						thisTile.paintIcon(this, g, X, Y);
-					}
-
-				}
-			}
-		}
-
-		@Override
-		public void mouseClicked(MouseEvent e) {
-			Point p = e.getPoint();
-			if(counter == 0){
-				if(isValidWall(p.getX(), p.getY())) {
-					manageGame(game);
-					++counter;
-				}
-			}
-
-		}
-		private void wait(int ms){
-			try
-			{
-				Thread.sleep(ms);
-			}
-			catch(InterruptedException ex)
-			{
-				Thread.currentThread().interrupt();
-			}
-		}
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-
-		}
-
-		private boolean isValidWall(double x, double y){
-			if(x <= 9 || x >= 539 || y <=9 || y>=539) return false;
-			int small = 10;
-			double previousX = 59;
-			for(int i = 0; i < 8; i++){ //loop thru the board
-				double min = previousX;
-				double max = min + small;
-				boolean ValidXCoord = x > min && x < max;
-				boolean ValidYCoord = y > min && y < max;
-				if(ValidXCoord || ValidYCoord){
-					i = convertToBoardCoord(i);
-					if(ValidXCoord){ //Valid X Coord
-						// i is equal to the col number
-						// check in the game if 
-						game.hasAvailableWallGivenColumn(y, i);
-					}else{ //Valid Y Coord
-						// i is equal to the row number
-						game.hasAvailableWallGivenRow(x, i);
-						
-						
-					}
-					return true;
-				}
-				previousX = max + 50;
-			}
-			
-			return false;
-		}
-
-		private int convertToBoardCoord(int i ){
-			if(i==0){
-				i += 1;
-			} else if(i!=0) i = 2*i + 1;
-			return i;
-		}
-		
-	}
-
-	class MyFrame extends JFrame implements KeyListener {
-		int cols = gameRows;
-		int rows = gameColumns;
-
-		@Override
-		public void keyPressed(KeyEvent e) {
-
-		}
-
-		@Override
-		public void keyReleased(KeyEvent e) {
-			GameState gameState = game.getGameState();
-			boolean playerHasAlreadyWon = gameState == GameState.P1_WIN || gameState == GameState.P2_WIN;
-			if (playerHasAlreadyWon)
-				System.out.println("Player has already Won");
-			int key = e.getKeyCode();
-
-			switch (key) {
-				case (KeyEvent.VK_UP):
-					if (gameState == GameState.P1_TURN) {
-						game.p1.moveUp();
-					} else {
-						game.p2.moveUp();
-					}
-					break;
-				case KeyEvent.VK_DOWN:
-					if (gameState == GameState.P1_TURN) {
-						game.p1.moveDown();
-					} else {
-						game.p2.moveDown();
-					}
-					break;
-				case KeyEvent.VK_LEFT:
-					if (gameState == GameState.P1_TURN) {
-						game.p1.moveLeft();
-					} else {
-						game.p2.moveLeft();
-					}
-					break;
-				case KeyEvent.VK_RIGHT:
-					if (gameState == GameState.P1_TURN) {
-						game.p1.moveRight();
-					} else {
-						game.p2.moveRight();
-					}
-					break;
-			}
-
-			manageGame(game);
-
-		}
-
-		@Override
-		public void keyTyped(KeyEvent e) {
-
-		}
-	}
-
-	private void manageGame(Game game) {
-		System.out.println("Manage State Called");
-		game.updateBoard();
-		updatePlayerTurn();
-		PlayerOneWallsLabel.setText("Player 1 Walls: " + game.p1ActiveWalls.size());
-		PlayerTwoWallsLabel.setText("Player 2 Walls: " + game.p2ActiveWalls.size());
-		gb.repaint();
-		game.printBoard();
-	}
-
-	public void updatePlayerTurn() {
-		GameState gameState = game.getGameState();
-		String message = "";
-		switch (gameState) {
-			case P1_TURN:
-				message = "Player 1";
-				break;
-			case P2_TURN:
-				message = "Player 2";
-				break;
-			case P1_WIN:
-				message = "Player 1 Win";
-				break;
-			case P2_WIN:
-				message = "Player 2 Win";
-				break;
-			case CONTINUE:
-				message = "CONTINUE";
-				break;
-		}
-		playerTurn.setText(message);
-	}
-
 }
