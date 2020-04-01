@@ -120,8 +120,10 @@ public class GUI {
 	}
 
 	class GameBoard extends JPanel implements MouseListener {
+		private int counter = 0;
 		@Override
 		protected void paintComponent(Graphics g) {
+			counter = 0;
 			g.setColor(new Color(20, 20, 20));
 			System.out.println("GB WIDTH: " + this.getWidth());
 			System.out.println("GB HEIGHT: " + this.getHeight());
@@ -169,20 +171,34 @@ public class GUI {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
+			Point p = e.getPoint();
+			if(counter == 0){
+				if(isValidWall(p.getX(), p.getY())) {
+					manageGame(game);
+					++counter;
+				}
+			}
 
+		}
+		private void wait(int ms){
+			try
+			{
+				Thread.sleep(ms);
+			}
+			catch(InterruptedException ex)
+			{
+				Thread.currentThread().interrupt();
+			}
 		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
-
+			
 		}
 
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			Point p = e.getPoint();
-			isValidWall(p.getX(), p.getY());
-
-
+			
 		}
 
 		@Override
@@ -209,13 +225,12 @@ public class GUI {
 					if(ValidXCoord){ //Valid X Coord
 						// i is equal to the col number
 						// check in the game if 
-						
-						// System.out.println("Row" + y + "Column" + i);
 						game.hasAvailableWallGivenColumn(y, i);
 					}else{ //Valid Y Coord
 						// i is equal to the row number
-						// System.out.println("Row" + i + "Column" + y);
 						game.hasAvailableWallGivenRow(x, i);
+						
+						
 					}
 					return true;
 				}
@@ -241,13 +256,6 @@ public class GUI {
 		@Override
 		public void keyPressed(KeyEvent e) {
 
-		}
-
-		private void manageGame(Game game) {
-			System.out.println("Manage State Called");
-			game.updateBoard();
-			updatePlayerTurn();
-			gb.repaint();
 		}
 
 		@Override
@@ -299,6 +307,16 @@ public class GUI {
 		}
 	}
 
+	private void manageGame(Game game) {
+		System.out.println("Manage State Called");
+		game.updateBoard();
+		updatePlayerTurn();
+		PlayerOneWallsLabel.setText("Player 1 Walls: " + game.p1ActiveWalls.size());
+		PlayerTwoWallsLabel.setText("Player 2 Walls: " + game.p2ActiveWalls.size());
+		gb.repaint();
+		game.printBoard();
+	}
+
 	public void updatePlayerTurn() {
 		GameState gameState = game.getGameState();
 		String message = "";
@@ -320,7 +338,6 @@ public class GUI {
 				break;
 		}
 		playerTurn.setText(message);
-
 	}
 
 }

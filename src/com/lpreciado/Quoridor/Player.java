@@ -161,9 +161,9 @@ public class Player {
 	public boolean placeWall(int[] coords, ArrayList<Wall> activeWalls) {
 			if(this.walls > 0) {
 				Wall w = availableWalls.pop();
-				--walls;
 				w.place(coords);
 				activeWalls.add(w);
+				walls = 10 - activeWalls.size();
 				finishMove(true);
 				return true;
 			}else {
@@ -173,3 +173,5 @@ public class Player {
 	}
 		
 }
+
+

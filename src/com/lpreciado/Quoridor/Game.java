@@ -64,19 +64,46 @@ public class Game {
 			int max = previousX + 60;
 			if(x > previousX && x < max){
 				i = convertToBoardCoord(i);
-				System.out.println("Wall to be Place in Column: " + i + "Row: " + rowNumber);
-				if(hasAvailableWall(i, rowNumber)){
+				if(hasAvailableWall(i, rowNumber) && p1.getWalls() > 0){
 					p1.placeWall(new int[]{rowNumber, i}, p1ActiveWalls);
-					updateBoard();
-				}else{
-
+					// updateBoard();
+					// printBoard();
+					return true;
+				}else if(hasAvailableWall(i, rowNumber) && p2.getWalls() > 0){
+					p2.placeWall(new int[]{rowNumber, i}, p1ActiveWalls);
+					// updateBoard();
+					// printBoard();
+					return true;
 				}
 				
 			}
 			previousX = max;
+		}	
+		return false;
+	}
+	public boolean hasAvailableWallGivenColumn(double x, int colNumber){
+		int previousX = 9;
+		for(int i = 0; i < 8; i++){
+			int max = previousX + 60;
+			if(x > previousX && x < max){
+				i = convertToBoardCoord(i);
+				// System.out.println("Wall to be Place in Row: " + i + "Column: " + colNumber);
+				if(hasAvailableWall(i, colNumber)){
+					if(isP1Turn() && p1.getWalls() > 0){
+						p1.placeWall(new int[]{i, colNumber}, p1ActiveWalls);
+						return true;
+					} else if(!isP1Turn() && p2.getWalls() > 0){
+						p2.placeWall(new int[]{i, colNumber}, p1ActiveWalls);
+						return true;
+					}		
+					updateBoard();
+				}
+			}
+			previousX = max;
 		}
+		
 		printBoard();
-		return true;
+		return false;
 	}
 	private int convertToBoardCoord(int i ){
 		if(i==0){
@@ -87,26 +114,42 @@ public class Game {
 
 	private boolean hasAvailableWall(int r, int c){
 		if(board[r][c] == 'W') return false;
+
+			int[][] result = new int[3][2];
+			int col = c;
+			int row = r;
+			//{{row,col}, {row,col},{row,col}}
+			result[0][1] = row;
+			result[0][0] = col;
+		
+			if(row % 2 == 0 || row == 0){
+				result[1][1] = row + 1;
+				result[1][0] = col;
+				result[2][1] = row + 2;
+				result[2][0] = col;
+		
+			}else{
+				result[1][1] = row;
+				result[1][0] = col + 1;
+				result[2][1] = row;
+				result[2][0] = col + 2;
+			}
+
+			for(int i = 0; i < result.length; i++){
+					if(board[i][0] == 'W' || board[i][1] == 'W'){
+						return false;
+					}		
+			}
+		
+
 		return true;
 	}
 
-	public boolean hasAvailableWallGivenColumn(double x, int colNumber){
-		int previousX = 9;
-		for(int i = 0; i < 8; i++){
-			int max = previousX + 60;
-			if(x > previousX && x < max){
-				i = convertToBoardCoord(i);
-				System.out.println("Wall to be Place in Row: " + i + "Column: " + colNumber);
-				if(hasAvailableWall(i, colNumber)){
-					p1.placeWall(new int[]{i, colNumber}, p1ActiveWalls);
-					updateBoard();
-				}
-			}
-			previousX = max;
-		}
-		printBoard();
-		return true;
+	public boolean isP1Turn(){
+		if(this.getGameState() == GameState.P1_TURN) return true;
+		return false;
 	}
+
 	
 	public char[][] getGameBoard(){
 		return this.board;
@@ -192,7 +235,7 @@ public class Game {
 			for (int j = 0; j < board[i].length; j++) {
 				boolean isPlayerOneCurrentPosition = i == p1.getRowPosition() && j == p1.getColPosition();
 				boolean isPlayerTwoCurrentPosition = i == p2.getRowPosition() && j == p2.getColPosition();
-				boolean isReplaceablePlayerSpot = (board[i][j] != '.' && board[i][j] != '-' && board[i][j] != '|');
+				boolean isReplaceablePlayerSpot = (board[i][j] != '.' && board[i][j] != '-' && board[i][j] != '|' && board[i][j] != 'W');
 	
 				if(isPlayerOneCurrentPosition) {
 					board[i][j] = '1';
