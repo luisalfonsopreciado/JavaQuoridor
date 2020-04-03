@@ -1,0 +1,9 @@
+In Game Class, Reduce hasAvailableWallGivenColumn Function, make 
+one that is more reusable.
+
+Make the game flexible (Allow user to enter board dimensions/number of walls)
+
+Add Pathfinding Algorithm for a computer hint
+
+Play against an AI
+

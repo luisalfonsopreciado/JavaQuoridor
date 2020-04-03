@@ -5,5 +5,4 @@ public enum GameState {
 	P2_TURN,
 	P1_WIN,
 	P2_WIN,
-	CONTINUE,
 }

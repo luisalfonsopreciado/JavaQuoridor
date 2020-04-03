@@ -58,6 +58,10 @@ public class GUI {
 	}
 
 	class GameBoard extends JPanel implements MouseListener {
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -1556953159999835427L;
 		private int counter = 0;
 		@Override
 		protected void paintComponent(Graphics g) {
@@ -112,7 +116,7 @@ public class GUI {
 					++counter;
 				}
 			}else{
-				System.out.println("COUNTER NOT ZERO");
+				return;
 			}
 
 		}
@@ -129,6 +133,10 @@ public class GUI {
 	}
 
 	class MyFrame extends JFrame implements KeyListener {
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -7841965969758905927L;
 		int cols = gameRows;
 		int rows = gameColumns;
 
@@ -182,12 +190,10 @@ public class GUI {
 	}
 
 	private void manageGame(Game game) {
-		System.out.println("Manage Game Called");
 		game.updateBoard();
 		updatePlayerTurn();
 		updateJLabels();
 		gb.repaint();
-		game.printBoard();
 	}
 	private void updateJLabels(){
 		PlayerOneWallsLabel.setText("Player 1 Walls: " + game.p1.getWalls());
@@ -209,9 +215,6 @@ public class GUI {
 				break;
 			case P2_WIN:
 				message = "Player 2 Win";
-				break;
-			case CONTINUE:
-				message = "CONTINUE";
 				break;
 		}
 		playerTurn.setText(message);
