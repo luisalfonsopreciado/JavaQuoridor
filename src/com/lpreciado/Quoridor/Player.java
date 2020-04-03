@@ -99,7 +99,7 @@ public class Player {
 	}
 	
 	private boolean canMoveRight(char[][] board) {
-		if(getColPosition() < (this.boardWidth - 3) && isTurn()) {
+		if(getColPosition() < (this.boardWidth - 1) && isTurn()) {
 			int currentRow = getRowPosition();
 			int currentCol = getColPosition() + 1;
 			boolean isAWall = board[currentRow][currentCol] == 'W';
@@ -184,7 +184,7 @@ public class Player {
 				finishMove(true);
 				return true;
 			}else {
-				System.out.println("PLAYER HAS NO MORE WALLS AVAILABLE");
+				System.out.println("PLSystemAYER HAS NO MORE WALLS AVAILABLE");
 				return false;
 			}
 			

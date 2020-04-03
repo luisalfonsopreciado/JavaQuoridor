@@ -64,7 +64,8 @@ public class Game {
 			int max = previousX + 60;
 			if(x > previousX && x < max){
 				i = convertToBoardCoord(i) - 1;
-				if(hasAvailableWall(i, rowNumber)){
+				System.out.println("CLICKED ON COORD" + rowNumber + " " + i);
+				if(hasAvailableWall(rowNumber, i)){
 					if( p1.getWalls() > 0 && isP1Turn()){
 						p1.placeWall(new int[]{rowNumber, i}, p1ActiveWalls);
 						// updateBoard();
@@ -82,7 +83,7 @@ public class Game {
 			}
 			previousX = max;
 		}	
-		System.out.println("THERE IS ALREADY A WALL HERE");
+		System.out.println("HAS AVAILABLE WALL GIVEN ROW NOT PASSED");
 		return false;
 	}
 	
@@ -92,6 +93,7 @@ public class Game {
 			int max = previousX + 60;
 			if(x > previousX && x < max){
 				i = convertToBoardCoord(i) - 1;
+				System.out.println("CLICKED ON COORD" + i + " " + colNumber);
 				if(hasAvailableWall(i, colNumber)){
 					if(isP1Turn() && p1.getWalls() > 0){
 						p1.placeWall(new int[]{i, colNumber}, p1ActiveWalls);
@@ -105,13 +107,15 @@ public class Game {
 			}
 			previousX = max;
 		}
-		
+		System.out.println("HAS AVAILABLE WALL GIVEN COLUMN NOT PASSED");
 		return false;
 	}
 
 	private boolean hasAvailableWall(int r, int c){
-		if(board[r][c] == 'W') return false;
-
+		if(board[r][c] == 'W') {
+			System.out.println("THERE IS ALREADY A WALL HERE");
+			return false;
+		}
 			int[][] result = new int[3][2];
 			int col = c;
 			int row = r;
